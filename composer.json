@@ -1,0 +1,13 @@
+{
+  "name": "edmondscommerce/magento2-data-migration",
+  "description": "A tool to help with data migration",
+  "homepage": "https://www.edmondscommerce.co.uk",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "edmondscommerce",
+      "email": "info@edmondscommerce.co.uk"
+    }
+  ],
+  "minimum-stability": "dev"
+}
