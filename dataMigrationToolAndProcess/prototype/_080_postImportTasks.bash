@@ -47,3 +47,8 @@ update eav_attribute set frontend_input = 'text' where frontend_input not in (
 "
 
 mysql "$targetDb" -e "TRUNCATE TABLE design_change"
+
+if [[ -f ./../../../../../bin/dataMigration/postProcess.bash ]]
+then
+    bash -$- ./../../../../../bin/dataMigration/postProcess.bash
+fi
