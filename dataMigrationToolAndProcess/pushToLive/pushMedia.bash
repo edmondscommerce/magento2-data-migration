@@ -55,7 +55,7 @@ set -e
 
 
 echo "$localMediaPath --> $remoteMediaPath";
-rsync -vz \
+rsync -rPvz \
     --omit-dir-times \
     --exclude '*/cache/*' \
     --exclude '*.gz' \
