@@ -19,7 +19,7 @@ This is used to run through the migration process and generate the config files 
 If you have made any modifications to the config files these will be wiped, so if you need to run the final process use
 the following command
 
-    $(dirname ${DIR})/finalRun.sh
+    $(dirname ${DIR})/finalRun.bash
 
 To run this command you need to use the following command
 
@@ -32,13 +32,13 @@ useBeast=${2:-"true"}
 echo "
 Let's make sure everything is set up and ready to run
 "
-bash -${-//s} ./_00_checkPreRun.sh ${useBeast}
-bash -${-//s} ./_010_dropAndRebuildDatabase.sh ${magento2DbName} ${useBeast}
-bash -${-//s} ./_020_configureMigrationTool.sh ${useBeast}
+bash -${-//s} ./_00_checkPreRun.bash ${useBeast}
+bash -${-//s} ./_010_dropAndRebuildDatabase.bash ${magento2DbName} ${useBeast}
+bash -${-//s} ./_020_configureMigrationTool.bash ${useBeast}
 echo "
 Now lets try running the migration - this is very likely to fail
 "
-bash -${-//s} ./_030_runFirstMigration.sh
+bash -${-//s} ./_030_runFirstMigration.bash
 php -f ${DIR}/_040_parseLogAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
 echo "
 After clearing the most obvious errors lets try migrating the data again
@@ -55,13 +55,13 @@ php -f ${DIR}/_060_parseMoveXmlAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
 echo "
 With that done, let's reset the database to a clean state and migrate again
 "
-bash -${-//s} ./_010_dropAndRebuildDatabase.sh ${magento2DbName} ${useBeast} true
-bash -${-//s} ./_070_runFinalMigration.sh
+bash -${-//s} ./_010_dropAndRebuildDatabase.bash ${magento2DbName} ${useBeast} true
+bash -${-//s} ./_070_runFinalMigration.bash
 echo "
 Assuming that all went to plan, there are a couple of things that we need to clean up
 "
 bash -${-//s} ./_080_postImportTasks.bash "${magento2DbName}"
-bash -${-//s} ./_090_cleanUpTasks.sh
+bash -${-//s} ./_090_cleanUpTasks.bash
 
 
 echo "
