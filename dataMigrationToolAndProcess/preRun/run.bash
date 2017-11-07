@@ -89,4 +89,4 @@ bash -${-//s} ./_04_fixKnownIssues.bash "$databaseName" "$useBeast"
 
 remoteMediaPath="${remoteVhostPublicPath}media";
 localMediaPath="${vhostRoot}/pub/media";
-#bash -${-//s} ./_05_downloadMedia.bash "$sshUser" "$sshHost" "$remoteMediaPath" "$localMediaPath" "$databaseName" "$sshPort" "$useBeast";
+bash -${-//s} ./_05_downloadMedia.bash "$sshUser" "$sshHost" "$remoteMediaPath" "$localMediaPath" "$databaseName" "$sshPort" "$useBeast";
