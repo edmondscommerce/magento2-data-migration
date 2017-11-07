@@ -77,13 +77,13 @@ then
     fi
 fi
 #
-if [[ ! -f "$localLiveFilesStorage/$dumpName" ]]
-then
-    echo "
-    No dump file found - will create a new one
-    "
+#if [[ ! -f "$localLiveFilesStorage/$dumpName" ]]
+#then
+#    echo "
+#    No dump file found - will create a new one
+#    "
     bash -${-//s} ./_02_downloadDatabase.bash "$sshUser" "$sshHost" "$sshPort" "$remoteVhostPublicPath" "$localLiveFilesStorage" "$tableListPath" "$dumpName";
-fi
+#fi
 bash -${-//s} ./_03_importDatabase.bash "$databaseName" "$localLiveFilesStorage/$dumpName" "$useBeast";
 bash -${-//s} ./_04_fixKnownIssues.bash "$databaseName" "$useBeast"
 
