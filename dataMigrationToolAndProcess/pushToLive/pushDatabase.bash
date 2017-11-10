@@ -65,10 +65,4 @@ mysqldump \
     | gzip -c \
     | pv \
     | ssh "root@$sshHost" -p $sshPort \
-<<<<<<< HEAD
         -- bash -c "zcat -d | mysql $localDbName"
-=======
-        -- bash -c "
-        zcat -d | mysql $localDbName
-    "
->>>>>>> 5da3c4c3773f614692e9c66554d11791c301eea1
