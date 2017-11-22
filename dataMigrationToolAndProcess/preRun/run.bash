@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
+echo "1"
 readonly DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+echo "2"
 cd $DIR;
+echo "3"
 source ../../_top.inc.bash
+echo "4"
 
 function usage(){
 
@@ -76,14 +80,23 @@ then
         bash -${-//s} ./_01_getM1ReferenceDbAndGenWhiteList.bash "$magento1Version" "$magento1RefPath" "$magento1DbRefName" "$useBeast";
     fi
 fi
-#
-#if [[ ! -f "$localLiveFilesStorage/$dumpName" ]]
-#then
-#    echo "
-#    No dump file found - will create a new one
-#    "
+
+if [[ -f "$localLiveFilesStorage/$dumpName" ]]
+then
+    echo "Database dump already downloaded to $localLiveFilesStorage/$dumpName"
+    echo "Re-use this (y) or dump a fresh one from live (n)?"
+    read skip
+    if [[ "${skip}" != "y" ]]
+    then
+        echo "
+        Creating new database dump
+        "
+        bash -${-//s} ./_02_downloadDatabase.bash "$sshUser" "$sshHost" "$sshPort" "$remoteVhostPublicPath" "$localLiveFilesStorage" "$tableListPath" "$dumpName";
+    fi
+else
+    echo "Dumping the live database"
     bash -${-//s} ./_02_downloadDatabase.bash "$sshUser" "$sshHost" "$sshPort" "$remoteVhostPublicPath" "$localLiveFilesStorage" "$tableListPath" "$dumpName";
-#fi
+fi
 bash -${-//s} ./_03_importDatabase.bash "$databaseName" "$localLiveFilesStorage/$dumpName" "$useBeast";
 bash -${-//s} ./_04_fixKnownIssues.bash "$databaseName" "$useBeast"
 
