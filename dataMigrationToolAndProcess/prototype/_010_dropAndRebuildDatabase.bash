@@ -39,12 +39,7 @@ then
     exit 1
 fi
 
-echo "
-
-You're about to destroy your database, confirm!
-
-"
-echo "confirm y/n"
+echo "This will drop and rebuild the database ${targetDb}. Proceed? (y/n)"
 read confirm
 if [[ "y" != "$confirm" ]]
 then
@@ -57,31 +52,32 @@ mysqlBeast="";
 grantAccess="";
 if [[ "$useBeast" == "true" ]]
 then
-    echo "Enter password the beast db \n";
+    echo "Enter the password for the beast's root mysql user";
     read beastPassword
-    mysqlBeast=" -uroot --password=${beastPassword} -h beast";
+    mysqlBeastCmd="mysql -u root --password=${beastPassword} -h beast";
     grantHost="192.168.%.%";
 else
     grantHost="localhost";
 fi
 
+echo "Granting access on ${targetDb} to ${beastDbUsername}@'${grantHost}"
 grantAccess="GRANT ALL ON ${targetDb}.* to ${beastDbUsername}@'${grantHost}';";
 
-mysql ${mysqlBeast} -e   "DROP DATABASE IF EXISTS ${targetDb}"
+echo "Dropping ${targetDb}"
+eval "${mysqlBeastCmd} -e  \"DROP DATABASE IF EXISTS ${targetDb}\""
 
-mysql ${mysqlBeast} -e "CREATE DATABASE ${targetDb} CHARACTER SET utf8 COLLATE utf8_general_ci; ${grantAccess}"
+echo "Creating ${targetDb}"
+eval "mysql ${mysqlBeastCmd} -e \"CREATE DATABASE ${targetDb} CHARACTER SET utf8 COLLATE utf8_general_ci; ${grantAccess}\" "
 
-echo "
-Going to disable every non Magento module to allow a clean install
-"
+echo "Disabling every non-Magento module to allow a clean install"
 sed -i "/'Magento_/! s/1,/0,/" ${vhostRoot}/app/etc/config.php
 
 if [[ -f ${vhostRoot}/justInstalledClean.sql.gz && ${forceReinstall} == "false" ]]
 then
-    echo "Found just installed dump, reimporting that"
+    echo "Reimporting previously created database dump"
     zcat ${vhostRoot}/justInstalledClean.sql.gz | mysql ${mysqlBeast} "${targetDb}"
 else
-    echo "Not found just installed db dump, doing a full install"
+    echo "No database dump found, doing a full install"
     set +e
     rm -rf ${vhostRoot}/var/cache/*
     rm -rf ${vhostRoot}/var/di/*
@@ -91,17 +87,12 @@ else
     bash ${vhostRoot}/bin/installScript.bash
 fi
 
-echo "
-Running setup:upgrade again, because we recreated the database, and we need all the important fields
-
-First let's re-enable all of the modules
-"
+echo "Reenabling all the modules"
 sed -i 's#0,#1,#' ${vhostRoot}/app/etc/config.php
-
-echo "
-But not the one that breaks the install
-"
+echo "Disabling EdmondsCommerce_ProductionSettings because it breaks the install"
 sed -i "s#EdmondsCommerce_ProductionSettings' => 1#EdmondsCommerce_ProductionSettings' => 0#" ${vhostRoot}/app/etc/config.php
+
+echo "Running setup:upgrade again, because we recreated the database, and we need all the important fields"
 
 magento setup:upgrade
 

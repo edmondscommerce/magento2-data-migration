@@ -8,24 +8,19 @@ standardIFS="$IFS"
 IFS=$'\n\t'
 source ../../_top.inc.bash
 
-echo "
+echo "Running Migration"
 
-Running Migration
-
-"
 cd ${vhostRoot}
 mkdir -p var/dataMigration
 echo "
-
-migrating settings
-
-"
+Running bin/magento's migrate:settings command"
+echo "The output below will be logged to ${vhostRoot}/var/dataMigration/settingsMigration.log"
 magento -vvv --no-ansi migrate:settings ${dataMigrationDir}/config.xml  |& tee ${vhostRoot}/var/dataMigration/settingsMigration.log
+
 echo "
 
-migrating data and logging failures
-
-"
+Running bin/magento's migrate:data command"
+echo "The output below will be logged to ${vhostRoot}/var/dataMigration/dataMigration.log"
 set +e
 magento -vvv --no-ansi migrate:data -r ${dataMigrationDir}/config.xml |& tee ${vhostRoot}/var/dataMigration/dataMigration.log
 set -e

@@ -33,12 +33,24 @@ echo "
 Let's make sure everything is set up and ready to run
 "
 bash -${-//s} ./_00_checkPreRun.bash ${useBeast}
-bash -${-//s} ./_010_dropAndRebuildDatabase.bash ${magento2DbName} ${useBeast}
-bash -${-//s} ./_020_configureMigrationTool.bash ${useBeast}
+
 echo "
-Now lets try running the migration - this is very likely to fail
+Dropping and rebuilding the M2 database
+"
+
+bash -${-//s} ./_010_dropAndRebuildDatabase.bash ${magento2DbName} ${useBeast}
+
+echo "
+Configuring Magento's migration tool
+"
+bash -${-//s} ./_020_configureMigrationTool.bash ${useBeast}
+
+echo "
+Running the first migration
+Note: This is expected to output a lot of errors due to unmapped data
 "
 bash -${-//s} ./_030_runFirstMigration.bash
+
 php -f ${DIR}/_040_parseLogAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
 echo "
 After clearing the most obvious errors lets try migrating the data again

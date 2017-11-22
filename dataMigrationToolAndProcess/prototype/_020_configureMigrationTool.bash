@@ -63,16 +63,26 @@ else
     echo ${vhostRoot}/vendor/magento/data-migration-tool
 fi
 
-echo "
+echo -n "Checking that the dist config files exist... "
 
-Creating Config File
+if [[ -d ${vhostRoot}/vendor/magento/data-migration-tool/etc/ce-to-ce ]]
+then
+    xmlConfigFoldersPath=${vhostRoot}/vendor/magento/data-migration-tool/etc/ce-to-ce
+elif [[ -d ${vhostRoot}/vendor/magento/data-migration-tool/etc/opensource-to-opensource ]]
+then
+    xmlConfigFoldersPath=${vhostRoot}/vendor/magento/data-migration-tool/etc/opensource-to-opensource
+else
+    echo "Couldn't find Magento's XML config files at either of these paths:"
+    echo ${vhostRoot}/vendor/magento/data-migration-tool/etc/ce-to-ce
+    echo ${vhostRoot}/vendor/magento/data-migration-tool/etc/opensource-to-opensource
+    exit 1
+fi
 
-"
+echo "done"
 
-xmlConfigFoldersPath=${vhostRoot}/vendor/magento/data-migration-tool/etc/ce-to-ce
 if [[ "" != "${magento1Version}" ]]
 then
-    echo "You have specified Magento 1 version ${magento1Version}"
+    echo "Using files for Magento 1 version ${magento1Version}"
     if [ ! -d ${xmlConfigFoldersPath}/${magento1Version} ]
     then
         echo "Invalid magento1Version ${magento1Version}"
@@ -116,41 +126,46 @@ fi
 
 mkdir -p ${dataMigrationDir}
 cd ${dataMigrationDir}
-echo "
-
-Setting up config.xml
-
-"
+echo -n "Copying the distributed config.xml... "
 cp ${xmlConfigFoldersPath}/${magento1Version}/config.xml.dist ./config.xml
-mysqlRootPass=$(cat ~/.my.cnf | grep password | cut -d = -f 2)
+echo "done"
 
+echo -n "Getting mysql password from ~/.my.cnf... "
+mysqlRootPass=$(cat ~/.my.cnf | grep password | cut -d = -f 2)
+echo "done"
+
+echo -n "Updating the config.xml file with the Magento 1 database details... "
 magento1DbXmlFind='<database host="localhost" name="magento1" user="root"/>'
 magento1DbXmlReplace="<database host=\"${mysqlHost}\" name=\"${magento1DbName}\" user=\"${dbUsername}\" password=\"${mysqlRootPass}\"/>"
 sed -i  "s#${magento1DbXmlFind}#${magento1DbXmlReplace}#" ./config.xml
+echo "done"
 
+echo -n "Updating the config.xml file with the Magento 2 database details... "
 magento2DbXmlFind='<database host="localhost" name="magento2" user="root"/>'
 magento2DbXmlReplace="<database host=\"${mysqlHost}\" name=\"${magento2DbName}\" user=\"${dbUsername}\" password=\"${mysqlRootPass}\"/>"
 
 sed -i  "s#${magento2DbXmlFind}#${magento2DbXmlReplace}#" ./config.xml
+echo "done"
 
+echo -n "Updating the config.xml file with other configurations... "
 sed -i "#<source_prefix />#<source_prefix>${magento1DbPrefix}</source_prefix>#" ./config.xml
 
 sed -i "s#<crypt_key />#<crypt_key>${magento1CryptKey}</crypt_key>#" ./config.xml
 
 # better performance apparently
 sed -i "s#<direct_document_copy>0#<direct_document_copy>1#"  ./config.xml
+echo "done"
 
 echo "
+Setting up XML Config files in ${dataMigrationDir}"
 
-Setting up XML Config files in ${dataMigrationDir}
-
-"
-
+echo -n "Setting up map.xml file..."
 cd ${dataMigrationDir}
 if [[ ! -f ./map.xml ]]
 then
     cp ${xmlConfigFoldersPath}/${magento1Version}/map.xml.dist ./map.xml
 fi
+
 sed -i "s#/map.xml.dist#/map.xml#"  ./config.xml
 cd ${xmlConfigFoldersPath}/${magento1Version}/
 set +e
@@ -158,7 +173,9 @@ rm -f map.xml
 ln -s ${dataMigrationDir}/map.xml
 set -e
 cd ${vhostRoot}
+echo "done"
 
+echo -n "Setting up map-eav.xml... "
 cd ${dataMigrationDir}
 if [[ ! -f ./map-eav.xml ]]
 then
@@ -171,8 +188,9 @@ rm -f map-eav.xml
 ln -s ${dataMigrationDir}/map-eav.xml
 set -e
 cd ${vhostRoot}
+echo "done"
 
-
+echo -n "Setting up eav-attribute-groups.xml... "
 cd ${dataMigrationDir}
 if [[ ! -f ./eav-attribute-groups.xml ]]
 then
@@ -185,7 +203,10 @@ rm -f eav-attribute-groups.xml
 ln -s ${dataMigrationDir}/eav-attribute-groups.xml
 set -e
 cd ${vhostRoot}
+echo "done"
 
+
+echo -n "Setting up class-map.xml..."
 cd ${dataMigrationDir}
 if [[ ! -f ./class-map.xml ]]
 then
@@ -198,7 +219,9 @@ rm -f class-map.xml
 ln -s ${dataMigrationDir}/class-map.xml
 set -e
 cd ${vhostRoot}
+echo "done"
 
+echo -n "Setting up move.xml... "
 cd ${dataMigrationDir}
 if [[ ! -f 'move.xml' ]]; then
     cat << EOF > move.xml
@@ -212,6 +235,7 @@ if [[ ! -f 'move.xml' ]]; then
 </map>
 EOF
 fi
+echo "done"
 
 echo "
 ----------------

@@ -17,6 +17,8 @@ then
     dbUsername=${beastDbUsername};
 fi
 
+echo -n "Checking for a local.xml in the M1 files... "
+
 if [[ ! -f ${vhostRoot}/bin/dataMigration/mage1Files/local.xml ]]
 then
     echo "
@@ -25,15 +27,19 @@ then
     usage
     exit 1
 fi
+echo "done"
 
 ### PROCESS ###
+
+echo -n "Checking that a M1 database has been created... "
+
 DBCHECK=$(mysql -NBe 'SHOW DATABASES' | grep ${magento1DbName});
 
 if [[ "" == "${DBCHECK}" ]]
 then
     echo "ERROR
 
-    Database not found - please import it
+    Magento 1 database not found - please import it
 
 NOTE:
     You probably want to run ./preRun/run.bash
@@ -41,6 +47,9 @@ NOTE:
 "
     exit 1
 fi
+echo "done"
+
+echo -n "Checking that a M2 media folder exists and is not empty... "
 
 if (( $(find ${vhostRoot}/pub/media/ -type f | wc -l) < 100 ))
 then
@@ -52,6 +61,9 @@ NOTE:
 "
     exit 1
 fi
+echo "done"
+
+echo -n "Checking the jiraShell asset is present and configured... "
 
 if [[ ! -f ~/jiraShell/env ]]
 then
@@ -64,10 +76,9 @@ then
     "
     exit 1
 fi
+echo "done"
 
-echo "
-It looks like everything has been setup to allow this to run
-"
+echo "Prerun checks completed successfully"
 
 echo "
 ----------------
