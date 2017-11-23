@@ -51,9 +51,11 @@ Note: This is expected to output a lot of errors due to unmapped data
 "
 bash -${-//s} ./_030_runFirstMigration.bash
 
+
+
 php -f ${DIR}/_040_parseLogAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
 echo "
-After clearing the most obvious errors lets try migrating the data again
+After clearing the most obvious errors let's try migrating the data again
 "
 set +e
 magento -vvv --no-ansi migrate:data -r ${dataMigrationDir}/config.xml |& tee ${vhostRoot}/var/dataMigration/dataMigration.log

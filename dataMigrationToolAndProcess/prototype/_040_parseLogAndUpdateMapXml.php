@@ -19,7 +19,7 @@ function usage()
 
 $type = 'data';
 $logPath = $logDir . '/' . $type . 'Migration.log';
-echo "\nProcessing $type\n";
+echo "\nCollecting $type information from " .  $type . "Migration.log... ";
 $logContents = file_get_contents($logPath);
 
 ## parse out steps
@@ -28,10 +28,13 @@ preg_match_all(
     $logContents,
     $steps
 );
+
+echo count($steps) . " steps found\n";
+
 foreach ($steps['step'] as $k => $step) {
     $log = $steps['log'][$k];
     if (false !== strpos($log, 'ERROR')) {
-        echo "\nerrors found in step: $step";
+        echo "\nErrors were found in step $step\n";
         processDocuments($step, $log);
         processFields($step, $log);
         processDestinationDocuments($step, $log);
@@ -40,7 +43,7 @@ foreach ($steps['step'] as $k => $step) {
 }
 
 
-echo "\nALL DONE\n";
+echo "\nLog data processing complete\n";
 
 
 ######## FUNCTIONS ########
@@ -112,14 +115,15 @@ function processDocuments($step, $log)
     global $jiraShell;
     $jiraIssueTitlePrefix = "Magento 2 Data Migration, Step: $step";
     $subTasks = [];
-    echo "\nProcessing unmapped documents in step $step\n";
+    echo "Finding unmapped documents... ";
     preg_match_all(
-        '%\[ERROR\]: Source documents are not mapped. (?<documents>[a-zA-Z0-9_,]+)%si',
+        '%\[ERROR\]: Source documents are not mapped. (?<documents>[a-zA-Z0-9_,-]+)%si',
         $log,
         $sourceDocuments
     );
     if (!empty($sourceDocuments['documents'])) {
-        echo "\nFound " . count($sourceDocuments['documents']) . " document lines\n";
+        echo count($sourceDocuments['documents']) . " document lines found\n";
+        echo "Processing documents... ";
         foreach ($sourceDocuments['documents'] as $n => $line) {
             echo "\n$line";
             $map = xmlUpdater::instance()->getDomByStep($step);
@@ -137,23 +141,23 @@ function processDocuments($step, $log)
                     $jiraIssueTitlePrefix . ' , Ignored Doc: ' . $i
                 ];
             }
-            echo "\nDone processing documents\n";
+            echo "done\n";
         }
-//        if (!empty($subTasks)) {
-//            $jiraShell->queueIssue(
-//                $jiraIssueTitlePrefix . ' Ignored Documents',
-//                'Documents are being ignored. These need to be checked one by one to either confirm it should be ignored or to manage proper migration',
-//                $subTasks
-//            );
-//        }
+        if (!empty($subTasks)) {
+            $jiraShell->queueIssue(
+                $jiraIssueTitlePrefix . ' Ignored Documents',
+                'Documents are being ignored. These need to be checked one by one to either confirm it should be ignored or to manage proper migration',
+                $subTasks
+            );
+        }
     } else {
-        echo "\nno unmapped documents found";
+        echo "none found\n";
     }
 }
 
 function processFields($step, $log)
 {
-    echo "\nProcessing unmapped fields in step $step\n";
+    echo "Finding unmapped fields... ";
     global $jiraShell;
     $jiraIssueTitlePrefix = "Magento 2 Data Migration, Step: $step";
 
@@ -163,14 +167,15 @@ function processFields($step, $log)
         $sourceFields
     );
     if (!empty($sourceFields['fields'])) {
-        echo "\nFound " . count($sourceFields['fields']) . " field lines\n";
+        echo count($sourceFields['fields']) . " field lines found\n";
+        echo "Processing fields... ";
         foreach ($sourceFields['fields'] as $k => $line) {
-            echo "\nLine $k\n";
+            echo "\nLine $k: ";
             $map = xmlUpdater::instance()->getDomByStep($step);
             $document = $sourceFields['document'][$k];
             $fieldsToIgnore = explode(',', $line);
             $fieldsToIgnore = array_map('trim', $fieldsToIgnore);
-            echo "\nFound " . count($fieldsToIgnore) . " fields\n";
+            echo "found " . count($fieldsToIgnore) . " fields\n";
             $fieldRulesNode = $map->getElementsByTagName('field_rules')->item(0);
             foreach ($fieldsToIgnore as $i) {
                 $ignoreNode = $map->createElement('ignore');
@@ -182,17 +187,17 @@ function processFields($step, $log)
                     $jiraIssueTitlePrefix . ' Document: ' . $document . ' , Ignored Field: ' . $i
                 ];
             }
-            echo "\nDone processing fields\n";
+            echo "done\n";
         }
-//        if (!empty($subTasks)) {
-//            $jiraShell->queueIssue(
-//                $jiraIssueTitlePrefix . ' Ignored Fields',
-//                'Fields are being ignored. These need to be checked one by one to either confirm it should be ignored or to manage proper migration',
-//                $subTasks
-//            );
-//        }
+        if (!empty($subTasks)) {
+            $jiraShell->queueIssue(
+                $jiraIssueTitlePrefix . ' Ignored Fields',
+                'Fields are being ignored. These need to be checked one by one to either confirm it should be ignored or to manage proper migration',
+                $subTasks
+            );
+        }
     } else {
-        echo "\nno unmapped fields found";
+        echo "none found\n";
     }
 }
 
@@ -201,14 +206,15 @@ function processDestinationDocuments($step, $log)
     global $jiraShell;
     $jiraIssueTitlePrefix = "Magento 2 Data Migration, Step: $step";
     $subTasks = [];
-    echo "\nProcessing unmapped documents in step $step\n";
+    echo "Finding unmapped destination documents... ";
     preg_match_all(
         '%\[ERROR\]: Destination documents are not mapped. (?<documents>[a-zA-Z0-9_,]+)%si',
         $log,
         $sourceDocuments
     );
     if (!empty($sourceDocuments['documents'])) {
-        echo "\nFound " . count($sourceDocuments['documents']) . " document lines\n";
+        echo count($sourceDocuments['documents']) . " document lines found\n";
+        echo "Processing destination documents... ";
         foreach ($sourceDocuments['documents'] as $n => $line) {
             echo "\n$line";
             $map = xmlUpdater::instance()->getDomByStep($step);
@@ -226,23 +232,23 @@ function processDestinationDocuments($step, $log)
                     $jiraIssueTitlePrefix . ' , Ignored Doc: ' . $i
                 ];
             }
-            echo "\nDone processing documents\n";
+            echo "done\n";
         }
-//        if (!empty($subTasks)) {
-//            $jiraShell->queueIssue(
-//                $jiraIssueTitlePrefix . ' Ignored Documents',
-//                'Documents are being ignored. These need to be checked one by one to either confirm it should be ignored or to manage proper migration',
-//                $subTasks
-//            );
-//        }
+        if (!empty($subTasks)) {
+            $jiraShell->queueIssue(
+                $jiraIssueTitlePrefix . ' Ignored Documents',
+                'Documents are being ignored. These need to be checked one by one to either confirm it should be ignored or to manage proper migration',
+                $subTasks
+            );
+        }
     } else {
-        echo "\nno unmapped documents found";
+        echo "none found\n";
     }
 }
 
 function processDestinationFields($step, $log)
 {
-    echo "\nProcessing unmapped fields in step $step\n";
+    echo "Finding unmapped destination fields $step... ";
     global $jiraShell;
     $jiraIssueTitlePrefix = "Magento 2 Data Migration, Step: $step";
 
@@ -252,7 +258,8 @@ function processDestinationFields($step, $log)
         $sourceFields
     );
     if (!empty($sourceFields['fields'])) {
-        echo "\nFound " . count($sourceFields['fields']) . " field lines\n";
+        echo count($sourceFields['fields']) . " field lines found\n";
+        echo "Processing destination fields... ";
         foreach ($sourceFields['fields'] as $k => $line) {
             echo "\nLine $k\n";
             $map = xmlUpdater::instance()->getDomByStep($step);
@@ -271,17 +278,17 @@ function processDestinationFields($step, $log)
                     $jiraIssueTitlePrefix . ' Document: ' . $document . ' , Ignored Field: ' . $i
                 ];
             }
-            echo "\nDone processing fields\n";
+            echo "done\n";
         }
-//        if (!empty($subTasks)) {
-//            $jiraShell->queueIssue(
-//                $jiraIssueTitlePrefix . ' Ignored Fields',
-//                'Fields are being ignored. These need to be checked one by one to either confirm it should be ignored or to manage proper migration',
-//                $subTasks
-//            );
-//        }
+        if (!empty($subTasks)) {
+            $jiraShell->queueIssue(
+                $jiraIssueTitlePrefix . ' Ignored Fields',
+                'Fields are being ignored. These need to be checked one by one to either confirm it should be ignored or to manage proper migration',
+                $subTasks
+            );
+        }
     } else {
-        echo "\nno unmapped fields found";
+        echo "none found\n";
     }
 }
 
