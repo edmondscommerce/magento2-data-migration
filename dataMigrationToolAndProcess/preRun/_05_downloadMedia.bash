@@ -129,7 +129,7 @@ Rsyncing Media from Live
 
 "
 
-
+set +e
 echo "$remoteCatalogProductPath --> $m2CatalogProductPath";
 rsync -avz -e "ssh -p $sshPort" --files-from="$productImageList" "$sshUser@$sshHost":"$remoteCatalogProductPath" "$m2CatalogProductPath"
 
@@ -138,10 +138,15 @@ rsync -avz -e "ssh -p $sshPort" "$sshUser@$sshHost":"$remoteCatalogCategoryPath"
 
 echo "$remoteWysiwygPath --> $m2WysiwygPath";
 rsync -avz -e "ssh -p $sshPort" "$sshUser@$sshHost":"$remoteWysiwygPath" "$m2WysiwygPath";
+set -e
+
 echo "
 Done
 ";
-du -hs "$m2MediaPath";
 
+echo -n "Calculating size of $m2MediaPath... "
+du -hs "$m2MediaPath" | cut -f1;
+
+echo -n "Changing ownership of M2 media folder to ec... "
 chown ec:ec "$m2MediaPath" -R
-
+echo "done"
