@@ -59,6 +59,8 @@ Installing Magento version $version in $installPath on database $databaseName@$d
 
 "
 
+
+
 #https://github.com/netz98/n98-magerun#magento-installer
 if [[ "$(program_is_installed magerun)" == 0 ]]
 then
@@ -77,7 +79,7 @@ Clearing the existing database if it exists...
 echo "$useBeast";
 if [[ "$useBeast" == "true" ]]
 then
-    echo "Enter password the beast db \n";
+    echo -n "Enter password for the beast mysql root user: ";
     read beastPassword
     mysqlBeast=" -uroot --password=${beastPassword} -h beast";
     databaseHostGrant="192.168.%.%";

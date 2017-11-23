@@ -38,3 +38,23 @@ magento1DbName="${clientname}_magento1";
 magento1DbPrefix="$(xmllint --xpath "string(config/global/resources/db/table_prefix)"  ${localLiveFilesStorage}/local.xml)"
 magento2DbName="${clientname}_magento2";
 dataMigrationDir=${vhostRoot}/bin/dataMigration
+
+function preHookFile(){
+    local currentFile=$(basename $0)
+    local preHookFile="./../../../bin/dataMigration/preHooks/$currentFile"
+    if [[ -f $preHookFile ]]
+    then
+        echo "Sourcing $preHookFile for client-specific changes"
+        source $preHookFile
+    fi
+}
+
+function postHookFile(){
+    local currentFile=$(basename $0)
+    local postHookFile="./../../../bin/dataMigration/postHooks/$currentFile"
+    if [[ -f $postHookFile ]]
+    then
+        echo "Sourcing $postHookFile for client-specific changes"
+        source $postHookFile
+    fi
+}

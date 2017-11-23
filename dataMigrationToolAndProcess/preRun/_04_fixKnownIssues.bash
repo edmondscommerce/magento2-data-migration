@@ -35,8 +35,13 @@ useBeast=${2:-"true"}
 mysqlBeast="";
 if [[ "$useBeast" == "true" ]]
 then
-    mysqlBeast="-u root -p -h beast";
+    echo -n "Enter password for the beast mysql root user: ";
+    read beastPassword
+    mysqlBeast="-u root --password=${beastPassword} -h beast";
 fi
+
+# Prehook allows bin/dataMigration/preHooks/_04_fixKnownIssues.bash to be run before this
+preHookFile
 
 echo "
 Remove orphaned attributes
@@ -142,3 +147,8 @@ echo "
 Done
 
 "
+
+
+
+# Posthook allows bin/dataMigration/preHooks/_04_fixKnownIssues.bash to be run before this
+postHookFile

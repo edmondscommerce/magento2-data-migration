@@ -38,8 +38,10 @@ echo "$useBeast";
 if [[ "$useBeast" == "true" ]]
 then
     echo "
-    Now importing the DB to the Beast - give the root database user for the database when prompted
+    Now importing the DB to the Beast
     ";
+    echo -n "Enter password for the beast mysql root user: ";
+    read beastPassword
     mysqlQuery="
     DROP DATABASE IF EXISTS $databaseDestination;
     CREATE DATABASE $databaseDestination CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -47,14 +49,15 @@ then
     FLUSH PRIVILEGES;
     "
     echo "$mysqlQuery";
-    mysql -u root -p -h beast -e "
+    mysql -u root --password=${beastPassword} -h beast -e "
         $mysqlQuery
     "
 
-    echo "
-    Created database $databaseDestination and granted permissions to $beastDbUsername
-    ";
-    zcat "$dumpFilePath" | mysql -u root -p -h beast "$databaseDestination"
+    echo "Created database $databaseDestination and granted permissions to $beastDbUsername";
+    echo "Importing the database dump into $databaseDestination"
+
+    zcat "$dumpFilePath" | mysql -u root --password=${beastPassword} -h beast "$databaseDestination"
+    echo "Import completed";
 else
     echo "
     Now importing the DB locally

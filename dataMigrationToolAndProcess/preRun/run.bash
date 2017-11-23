@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
-echo "1"
 readonly DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
-echo "2"
 cd $DIR;
-echo "3"
 source ../../_top.inc.bash
-echo "4"
 
 function usage(){
 
@@ -73,7 +69,7 @@ magento1DbRefName="${databaseName}_ref";
 
 if [[ -d ${magento1RefPath} ]]
 then
-    echo "Magento 1 already appears to be installed, re-install? [y/n]"
+    echo -n "Magento 1 already appears to be installed, re-install? [y/n]: "
     read skip
     if [[ ${skip} == "y" ]]
     then
@@ -84,9 +80,9 @@ fi
 if [[ -f "$localLiveFilesStorage/$dumpName" ]]
 then
     echo "Database dump already downloaded to $localLiveFilesStorage/$dumpName"
-    echo "Re-use this (y) or dump a fresh one from live (n)?"
+    echo -n "Acquire a new one from the live server? [y/n]: "
     read skip
-    if [[ "${skip}" != "y" ]]
+    if [[ "${skip}" == "y" ]]
     then
         echo "
         Creating new database dump
@@ -103,3 +99,5 @@ bash -${-//s} ./_04_fixKnownIssues.bash "$databaseName" "$useBeast"
 remoteMediaPath="${remoteVhostPublicPath}media";
 localMediaPath="${vhostRoot}/pub/media";
 bash -${-//s} ./_05_downloadMedia.bash "$sshUser" "$sshHost" "$remoteMediaPath" "$localMediaPath" "$databaseName" "$sshPort" "$useBeast";
+
+echo "PreRun process completed"
