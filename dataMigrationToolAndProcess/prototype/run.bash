@@ -52,30 +52,21 @@ Note: This is expected to output a lot of errors due to unmapped data
 bash -${-//s} ./_030_runFirstMigration.bash
 
 
-
-php -f ${DIR}/_040_parseLogAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
-echo "
-After clearing the most obvious errors let's try migrating the data again
-"
-set +e
-magento -vvv --no-ansi migrate:data -r ${dataMigrationDir}/config.xml |& tee ${vhostRoot}/var/dataMigration/dataMigration.log
-set -e
 echo "
 Now let's try and clean this up properly
 "
-php -f ${DIR}/_040_parseLogAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
-php -f ${DIR}/_050_parseLogAndUpdateClassMapXml.php -- --vhostRoot=${vhostRoot}
-php -f ${DIR}/_060_parseMoveXmlAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
+bash -${-//s} ./_040_runSecondMigration.bash
+
 echo "
 With that done, let's reset the database to a clean state and migrate again
 "
-bash -${-//s} ./_010_dropAndRebuildDatabase.bash ${magento2DbName} ${useBeast} true
-bash -${-//s} ./_070_runFinalMigration.bash
+bash -${-//s} ./_050_dropAndRebuildDatabase.bash ${magento2DbName} ${useBeast} true
+bash -${-//s} ./_060_runFinalMigration.bash
 echo "
 Assuming that all went to plan, there are a couple of things that we need to clean up
 "
-bash -${-//s} ./_080_postImportTasks.bash "${magento2DbName}"
-bash -${-//s} ./_090_cleanUpTasks.bash
+bash -${-//s} ./_070_postImportTasks.bash "${magento2DbName}"
+bash -${-//s} ./_080_cleanUpTasks.bash
 
 
 echo "

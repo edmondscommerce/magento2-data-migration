@@ -40,8 +40,8 @@ magento2DbName="${clientname}_magento2";
 dataMigrationDir=${vhostRoot}/bin/dataMigration
 
 function preHookFile(){
-    local currentFile=$(basename $0)
-    local preHookFile="./../../../bin/dataMigration/preHooks/$currentFile"
+    local currentFile="$(basename $DIR)/$(basename $0)"
+    local preHookFile="${vhostRoot}/bin/dataMigration/hooks/${currentFile/\.bash/_preHook.bash}"
     if [[ -f $preHookFile ]]
     then
         echo "Sourcing $preHookFile for client-specific changes"
@@ -50,8 +50,8 @@ function preHookFile(){
 }
 
 function postHookFile(){
-    local currentFile=$(basename $0)
-    local postHookFile="./../../../bin/dataMigration/postHooks/$currentFile"
+    local currentFile="$(basename $DIR)/$(basename $0)"
+    local postHookFile="${vhostRoot}/bin/dataMigration/hooks/${currentFile/\.bash/_postHook.bash}"
     if [[ -f $postHookFile ]]
     then
         echo "Sourcing $postHookFile for client-specific changes"

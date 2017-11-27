@@ -34,6 +34,8 @@ useBeast=${3:-"true"}
 
 echo "Importing database in to $databaseDestination from $dumpFilePath";
 
+preHookFile
+
 echo "$useBeast";
 if [[ "$useBeast" == "true" ]]
 then

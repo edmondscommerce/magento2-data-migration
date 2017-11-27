@@ -142,6 +142,50 @@ WHERE item_id NOT IN (
   SELECT item_id
   FROM sales_flat_order_item
 );"
+
+
+
+echo "
+
+Fixing any orphaned configurable product labels
+
+"
+mysql $mysqlBeast "$databaseName" -e "
+DELETE FROM catalog_product_super_attribute_label
+WHERE product_super_attribute_id NOT IN (
+  SELECT product_super_attribute_id
+  FROM catalog_product_super_attribute
+);"
+
+
+
+echo "
+
+Fixing any orphaned attribute options
+
+"
+mysql $mysqlBeast "$databaseName" -e "
+DELETE FROM eav_attribute_option
+WHERE attribute_id NOT IN (
+  SELECT attribute_id
+  FROM eav_attribute
+);"
+
+
+echo "
+
+Fixing any orphaned attribute options
+
+"
+mysql $mysqlBeast "$databaseName" -e "
+DELETE FROM sales_flat_quote_item_option
+WHERE item_id NOT IN (
+  SELECT item_id
+  FROM sales_flat_quote_item
+);"
+
+
+
 echo "
 
 Done

@@ -25,6 +25,8 @@ set +e
 magento -vvv --no-ansi migrate:data -r ${dataMigrationDir}/config.xml |& tee ${vhostRoot}/var/dataMigration/dataMigration.log
 set -e
 
+php -f ${DIR}/includes/parseLogAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
+
 echo "
 ----------------
 $(hostname) $0 completed
