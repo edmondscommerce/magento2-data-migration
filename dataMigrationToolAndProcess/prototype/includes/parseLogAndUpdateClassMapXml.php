@@ -50,11 +50,11 @@ if (!empty($classes['class'])) {
     }
 }
 if (!empty($subTasks)) {
-//    $jiraShell->queueIssue(
-//        'Magento 2 Data Migration, Class Mappings',
-//        'Classes have been added to the class map - each one needs to be investigated',
-//        $subTasks
-//    );
+    $jiraShell->queueIssue(
+        'Magento 2 Data Migration, Class Mappings',
+        'Classes have been added to the class map - each one needs to be investigated',
+        $subTasks
+    );
 }
 echo "\nSaving updated XML";
 $xmlDom->save($mapFile, LIBXML_NOEMPTYTAG);
