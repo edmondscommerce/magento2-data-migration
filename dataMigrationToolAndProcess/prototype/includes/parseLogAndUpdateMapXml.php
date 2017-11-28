@@ -168,26 +168,29 @@ function processFields($step, $log)
     );
     if (!empty($sourceFields['fields'])) {
         echo count($sourceFields['fields']) . " field lines found\n";
-        echo "Processing fields... ";
+        echo "Processing fields...";
         foreach ($sourceFields['fields'] as $k => $line) {
             echo "\nLine $k: ";
             $map = xmlUpdater::instance()->getDomByStep($step);
             $document = $sourceFields['document'][$k];
             $fieldsToIgnore = explode(',', $line);
             $fieldsToIgnore = array_map('trim', $fieldsToIgnore);
-            echo "found " . count($fieldsToIgnore) . " fields\n";
+            echo "found " . count($fieldsToIgnore) . " fields: " . implode(", ", $fieldsToIgnore) . "\n";
             $fieldRulesNode = $map->getElementsByTagName('field_rules')->item(0);
             foreach ($fieldsToIgnore as $i) {
+                echo "[" . $i . "] adding to the ignore list... ";
                 $ignoreNode = $map->createElement('ignore');
                 $docNode = $map->createElement('field', "$document.$i");
                 $ignoreNode->appendChild($docNode);
                 $fieldRulesNode->appendChild($ignoreNode);
+                echo "done\n";
+                echo "[" . $i . "] preparing jira ticket... ";
                 $subTasks[] = [
                     $jiraIssueTitlePrefix . ' , Ignored Field: ' . $i,
                     $jiraIssueTitlePrefix . ' Document: ' . $document . ' , Ignored Field: ' . $i
                 ];
+                echo "done\n";
             }
-            echo "done\n";
         }
         if (!empty($subTasks)) {
             $jiraShell->queueIssue(
