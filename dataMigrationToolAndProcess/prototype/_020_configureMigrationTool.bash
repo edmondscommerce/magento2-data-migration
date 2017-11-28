@@ -27,25 +27,30 @@ function copyMagentoDistFile() {
     fi
 
     local distFileName="$1"
-    local versionFolder="${2:-''}"
+    local versionFolder="${2:-}"
 
-    echo -n "Setting up $distFileName.xml file..."
-    cd ${dataMigrationDir}
-    if [[ ! -f ./map.xml ]]
+    if [[ ${versionFolder} == "" ]]
     then
-        cp ${xmlConfigFoldersPath}/${magento1Version}/map.xml.dist ./map.xml
+        local pathToDistFile="${xmlConfigFoldersPath}/${versionFolder}/${distFileName}.xml.dist"
+    else
+        local pathToDistFile="${xmlConfigFoldersPath}/${distFileName}.xml.dist"
     fi
 
-    sed -i "s#/map.xml.dist#/map.xml#"  ./config.xml
-    cd ${xmlConfigFoldersPath}/${magento1Version}/
-    set +e
+    cd ${dataMigrationDir}
+    if [[ ! -f ./${distFileName}.xml ]]
+    then
+        cp ${xmlConfigFoldersPath}/${versionFolder}/${distFileName}.xml.dist ./${distFileName}.xml
+    fi
+
+    sed -i "s#/${distFileName}.xml.dist#/${distFileName}.xml#"  ./config.xml
+    cd ${xmlConfigFoldersPath}/${versionFolder}/
     rm -f map.xml
-    ln -s ${dataMigrationDir}/map.xml
-    set -e
+
+    if [[ ! -e ${distFileName}.xml ]]
+    then
+        ln -s ${dataMigrationDir}/${distFileName}.xml
+    fi
     cd ${vhostRoot}
-    echo "done"
-
-
 }
 
 cd ${vhostRoot}
@@ -191,67 +196,25 @@ echo "
 Setting up XML Config files in ${dataMigrationDir}"
 
 echo -n "Setting up map.xml file..."
-
-cd ${dataMigrationDir}
-if [[ ! -f ./map.xml ]]
-then
-    cp ${xmlConfigFoldersPath}/${magento1Version}/map.xml.dist ./map.xml
-fi
-
-sed -i "s#/map.xml.dist#/map.xml#"  ./config.xml
-cd ${xmlConfigFoldersPath}/${magento1Version}/
-set +e
-rm -f map.xml
-ln -s ${dataMigrationDir}/map.xml
-set -e
-cd ${vhostRoot}
+copyMagentoDistFile "map" ${magento1Version}
 echo "done"
 
-echo -n "Setting up map-eav.xml... "
-cd ${dataMigrationDir}
-if [[ ! -f ./map-eav.xml ]]
-then
-    cp ${xmlConfigFoldersPath}/map-eav.xml.dist ./map-eav.xml
-fi
-sed -i "s#/map-eav.xml.dist#/map-eav.xml#"  ./config.xml
-cd ${xmlConfigFoldersPath}/
-set +e
-rm -f map-eav.xml
-ln -s ${dataMigrationDir}/map-eav.xml
-set -e
-cd ${vhostRoot}
+echo -n "Setting up map-eav.xml file..."
+copyMagentoDistFile "map-eav"
 echo "done"
 
-echo -n "Setting up eav-attribute-groups.xml... "
-cd ${dataMigrationDir}
-if [[ ! -f ./eav-attribute-groups.xml ]]
-then
-    cp ${xmlConfigFoldersPath}/eav-attribute-groups.xml.dist ./eav-attribute-groups.xml
-fi
-sed -i "s#/eav-attribute-groups.xml.dist#/eav-attribute-groups.xml#"  ./config.xml
-cd ${xmlConfigFoldersPath}/
-set +e
-rm -f eav-attribute-groups.xml
-ln -s ${dataMigrationDir}/eav-attribute-groups.xml
-set -e
-cd ${vhostRoot}
+echo -n "Setting up eav-attribute-groups.xml file..."
+copyMagentoDistFile "eav-attribute-groups"
 echo "done"
 
-
-echo -n "Setting up class-map.xml..."
-cd ${dataMigrationDir}
-if [[ ! -f ./class-map.xml ]]
-then
-    cp ${xmlConfigFoldersPath}/class-map.xml.dist ./class-map.xml
-fi
-sed -i "s#/class-map.xml.dist#/class-map.xml#"  ./config.xml
-cd ${xmlConfigFoldersPath}/
-set +e
-rm -f class-map.xml
-ln -s ${dataMigrationDir}/class-map.xml
-set -e
-cd ${vhostRoot}
+echo -n "Setting up class-map.xml file..."
+copyMagentoDistFile "class-map"
 echo "done"
+
+echo -n "Setting up map-customer.xml file..."
+copyMagentoDistFile "map-customer"
+echo "done"
+
 
 echo -n "Setting up move.xml... "
 cd ${dataMigrationDir}
