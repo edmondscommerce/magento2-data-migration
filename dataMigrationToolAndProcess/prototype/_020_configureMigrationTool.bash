@@ -17,6 +17,37 @@ then
     dbUsername=${beastDbUsername};
 fi
 
+function copyMagentoDistFile() {
+
+    if [[ "$#" == "0" ]]
+    then
+        echo "Usage: copyMagentoDistFile [distFileName] (versionFolderPrefix='')"
+        echo "Example: copyMagentoDistFile map 1.9.0.1"
+        exit 1
+    fi
+
+    local distFileName="$1"
+    local versionFolder="${2:-''}"
+
+    echo -n "Setting up $distFileName.xml file..."
+    cd ${dataMigrationDir}
+    if [[ ! -f ./map.xml ]]
+    then
+        cp ${xmlConfigFoldersPath}/${magento1Version}/map.xml.dist ./map.xml
+    fi
+
+    sed -i "s#/map.xml.dist#/map.xml#"  ./config.xml
+    cd ${xmlConfigFoldersPath}/${magento1Version}/
+    set +e
+    rm -f map.xml
+    ln -s ${dataMigrationDir}/map.xml
+    set -e
+    cd ${vhostRoot}
+    echo "done"
+
+
+}
+
 cd ${vhostRoot}
 
 cronTabContents=$(crontab -l)
@@ -160,6 +191,7 @@ echo "
 Setting up XML Config files in ${dataMigrationDir}"
 
 echo -n "Setting up map.xml file..."
+
 cd ${dataMigrationDir}
 if [[ ! -f ./map.xml ]]
 then
