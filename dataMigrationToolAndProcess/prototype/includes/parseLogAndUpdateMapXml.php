@@ -81,6 +81,10 @@ class xmlUpdater
                 $mapFile = 'map-eav.xml';
                 break;
 
+            case 'Customer Attributes Step':
+                $mapFile = 'map-customer.xml';
+                break;
+
             default:
                 $mapFile = 'map.xml';
         }
@@ -157,7 +161,7 @@ function processDocuments($step, $log)
 
 function processFields($step, $log)
 {
-    echo "Finding unmapped fields... ";
+    echo "Finding unmapped fields for " . $step . "... ";
     global $jiraShell;
     $jiraIssueTitlePrefix = "Magento 2 Data Migration, Step: $step";
 
