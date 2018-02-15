@@ -44,7 +44,7 @@ function copyMagentoDistFile() {
 
     sed -i "s#/${distFileName}.xml.dist#/${distFileName}.xml#"  ./config.xml
     cd ${xmlConfigFoldersPath}/${versionFolder}/
-    rm -f map.xml
+    rm -f ${distFileName}.xml
 
     if [[ ! -e ${distFileName}.xml ]]
     then
