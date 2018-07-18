@@ -75,7 +75,10 @@ else
     rm -rf ${vhostRoot}/var/di/*
     rm -rf ${vhostRoot}/var/generation/*
     rm -rf ${vhostRoot}/var/page_cache/*
+    rm ${vhostRoot}/app/etc/env.php
     set -e
+    pwd
+    echo "Running  ${vhostRoot}/bin/installScript.bash"
     bash ${vhostRoot}/bin/installScript.bash
 fi
 
@@ -86,7 +89,7 @@ sed -i "s#EdmondsCommerce_ProductionSettings' => 1#EdmondsCommerce_ProductionSet
 
 echo "Running setup:upgrade again, because we recreated the database, and we need all the important fields"
 
-magento setup:upgrade
+php ${vhostRoot}/bin/magento setup:upgrade
 
 echo "
 ----------------

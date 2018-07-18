@@ -76,7 +76,7 @@ then
     Installing Data Migration Tool
 
     "
-    #magento2Version="2$(magento --version --no-ansi | cut -d '2' -f 2)"
+    #magento2Version="2$(php $vhostRoot/bin/magento --version --no-ansi | cut -d '2' -f 2)"
     composer config repositories.data-migration-tool vcs https://github.com/edmondscommerce/data-migration-tool
     composer require magento/data-migration-tool:dev-master --dev --prefer-source
     cd ${vhostRoot}/vendor/magento/data-migration-tool

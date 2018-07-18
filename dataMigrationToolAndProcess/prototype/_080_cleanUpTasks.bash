@@ -21,16 +21,16 @@ And now, assuming it worked, lets flush caches etc
 echo "
 recompile
 "
-magento setup:di:compile
+php ${vhostRoot}/bin/magento setup:di:compile
 
 echo "
 cache:flush
 "
-magento cache:flush
+php ${vhostRoot}/bin/magento cache:flush
 echo "
 indexer:reindex
 "
-magento indexer:reindex
+php ${vhostRoot}/bin/magento indexer:reindex
 
 echo "
 ----------------

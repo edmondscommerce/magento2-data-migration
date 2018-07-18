@@ -99,6 +99,7 @@ class xmlUpdater
     {
         if (!isset($this->doms[$mapFile])) {
             $xmlDom = new DOMDocument();
+            echo "\nLoading " . $GLOBALS['vhostRoot'] . '/bin/dataMigration/' . $mapFile . "\n";
             $xmlDom->load($GLOBALS['vhostRoot'] . '/bin/dataMigration/' . $mapFile);
             $this->doms[$mapFile] = $xmlDom;
         }
@@ -109,6 +110,7 @@ class xmlUpdater
     {
         foreach ($this->doms as $mapFile => $xmlDom) {
             $xmlDom->formatOutput = true;
+            echo "Saving " . $GLOBALS['vhostRoot'] . '/bin/dataMigration/' . $mapFile . "\n";
             $xmlDom->save($GLOBALS['vhostRoot'] . '/bin/dataMigration/' . $mapFile);
         }
     }
