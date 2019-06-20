@@ -46,20 +46,21 @@ if [[ "$useBeast" == "true" ]]
 then
     echo "Enter the password for the beast's root mysql user";
     read beastPassword
-    mysqlBeastCmd="mysql -u root --password=${beastPassword} -h beast";
+    mysqlCmd="mysql -u root --password=${beastPassword} -h beast";
     grantHost="192.168.%.%";
 else
     grantHost="localhost";
+    mysqlCmd="mysql";
 fi
 
 echo "Granting access on ${targetDb} to ${beastDbUsername}@'${grantHost}"
 grantAccess="GRANT ALL ON ${targetDb}.* to ${beastDbUsername}@'${grantHost}';";
 
 echo "Dropping ${targetDb}"
-eval "${mysqlBeastCmd} -e  \"DROP DATABASE IF EXISTS ${targetDb}\""
+eval "${mysqlCmd} -e  \"DROP DATABASE IF EXISTS ${targetDb}\""
 
 echo "Creating ${targetDb}"
-eval "mysql ${mysqlBeastCmd} -e \"CREATE DATABASE ${targetDb} CHARACTER SET utf8 COLLATE utf8_general_ci; ${grantAccess}\" "
+eval "mysql ${mysqlCmd} -e \"CREATE DATABASE ${targetDb} CHARACTER SET utf8 COLLATE utf8_general_ci; ${grantAccess}\" "
 
 echo "Disabling every non-Magento module to allow a clean install"
 sed -i "/'Magento_/! s/1,/0,/" ${vhostRoot}/app/etc/config.php
