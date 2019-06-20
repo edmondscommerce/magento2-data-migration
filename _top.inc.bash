@@ -33,7 +33,7 @@ function program_is_installed {
 
 localLiveFilesStorage=${vhostRoot}/bin/dataMigration/mage1Files
 magento1Version=$(cat ${localLiveFilesStorage}/mage1Version.txt)
-magento1CryptKey="$(xmllint --xpath "string(config/global/crypt)"  ${localLiveFilesStorage}/local.xml)"
+magento1CryptKey="$(xmllint --xpath "string(config/global/crypt/key)"  ${localLiveFilesStorage}/local.xml)"
 magento1DbName="${clientname}_magento1";
 magento1DbPrefix="$(xmllint --xpath "string(config/global/resources/db/table_prefix)"  ${localLiveFilesStorage}/local.xml)"
 magento2DbName="${clientname}_magento2";
