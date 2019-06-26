@@ -18,5 +18,10 @@
       "url": "https://github.com/edmondscommerce/jirashell"
     }
   ],
+  "autoload": {
+    "psr-4": {
+      "EdmondsCommerce\\MagentoMigration\\": ["src/"]
+    }
+  },
   "minimum-stability": "dev"
 }

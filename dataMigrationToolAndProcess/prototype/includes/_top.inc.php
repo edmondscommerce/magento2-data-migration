@@ -41,6 +41,13 @@ $vhostRoot = $options['vhostRoot'];
 
 $logDir = $vhostRoot . '/var/dataMigration/';
 
-require '/home/ec/jiraShell/jiraShell.php';
+require __DIR__ . '/../../../../../autoload.php';
 
-$jiraShell = new jiraShell();
+$jiraShell = new \EdmondsCommerce\JiraShell\JiraShell(
+    '/home/ec/jiraShell/queue.json',
+    '/home/ec/jiraShell/env'
+);
+
+$select = new \Edmondscommerce\MagentoMigration\Select(
+    __DIR__ . '/../../../../../../bin/dataMigration/config.xml'
+);

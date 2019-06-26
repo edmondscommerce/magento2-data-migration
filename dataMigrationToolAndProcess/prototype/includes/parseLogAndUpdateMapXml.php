@@ -43,8 +43,6 @@ foreach ($steps['step'] as $k => $step) {
     }
 }
 
-flushQueuedJiraIssues();
-
 echo "\nLog data processing complete\n";
 
 
@@ -363,11 +361,4 @@ function queueJiraIssue(string $title, string $description, array $subtasks = []
     }
 
     $jiraShell->queueIssue($title, $description, $subtasks);
-}
-
-function flushQueuedJiraIssues(): void
-{
-    global $jiraShell;
-
-    $jiraShell->flushQueuedIssues();
 }
