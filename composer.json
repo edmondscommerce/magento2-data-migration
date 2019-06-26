@@ -9,5 +9,14 @@
       "email": "info@edmondscommerce.co.uk"
     }
   ],
+  "require": {
+    "edmondscommerce/jirashell": "dev-master"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/edmondscommerce/jirashell"
+    }
+  ],
   "minimum-stability": "dev"
 }
