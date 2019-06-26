@@ -39,9 +39,11 @@ foreach ($steps['step'] as $k => $step) {
         processFields($step, $log);
         processDestinationDocuments($step, $log);
         processDestinationFields($step, $log);
+        processEav($step, $log);
     }
 }
 
+flushQueuedJiraIssues();
 
 echo "\nLog data processing complete\n";
 
@@ -299,3 +301,73 @@ function processDestinationFields($step, $log)
     }
 }
 
+function processEav(string $step, string $log): void
+{
+    if (! isEavStep($step)) {
+        return;
+    }
+
+    echo "Finding EAV issues $step...\n";
+
+    $pattern = '%\[ERROR\]: Incompatibility in data. Source document: (?<document>[^.]+?)\. Field: (?<fields>[a-zA-Z0-9_,]+)\. Error: (?<error>[^]+)%si';
+    $fields  = extractFields($pattern, $log);
+
+    if (empty($fields['fields'])) {
+        echo "none found\n";
+        return;
+    }
+
+    echo count($fields['fields']) . " issues found\n";
+    echo "Processing issues ...\n";
+
+    $subtasks = [];
+    $jiraIssueTitlePrefix = "Magento 2 Data Migration, Step: $step";
+
+    foreach ($fields['fields'] as $index => $field) {
+        $document = $fields['document'][$index];
+        $error    = $fields['error'][$index];
+
+        $subtasks[] = [
+            "$jiraIssueTitlePrefix, EAV issues $index",
+            "$jiraIssueTitlePrefix, Document: $document, Field: $field, Error: $error"
+        ];
+
+        echo "$document - $field - $error\n";
+    }
+
+    queueJiraIssue(
+        "$jiraIssueTitlePrefix, EAV Issues",
+        'EAV attributes that cannot currently be migrated',
+        $subtasks
+    );
+}
+
+function isEavStep(string $step): bool
+{
+    return 'EAV Step' === $step;
+}
+
+function extractFields(string $pattern, string $log): array
+{
+    preg_match_all($pattern, $log, $fields);
+
+    return $fields;
+}
+
+function queueJiraIssue(string $title, string $description, array $subtasks = []): void
+{
+    global $jiraShell;
+
+    if ([] === $subtasks) {
+        return;
+    }
+
+    $jiraShell->queueIssue($title, $description, $subtasks);
+}
+
+function flushQueuedJiraIssues(): void
+{
+    global $jiraShell;
+
+    $jiraShell->flushQueuedIssues();
+}
