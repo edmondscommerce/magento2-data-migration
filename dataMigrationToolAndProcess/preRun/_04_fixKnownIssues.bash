@@ -185,14 +185,53 @@ WHERE item_id NOT IN (
 );"
 
 
+echo "
+
+Adding missing required attribute set groups
+
+";
+
+for group in 'General' 'Prices' 'Design' 'Images'
+do
+    mysql -NB $mysqlBeast "$databaseName" -e "
+        SELECT
+            eav_attribute_set.attribute_set_id,
+            eav_attribute_set.attribute_set_name
+        FROM
+            eav_attribute_set
+            JOIN eav_attribute_group ON eav_attribute_set.attribute_set_id = eav_attribute_group.attribute_set_id
+        WHERE
+            eav_attribute_set.attribute_set_id NOT IN (
+                SELECT
+                    eav_attribute_set.attribute_set_id
+                FROM
+                    eav_attribute_set
+                    JOIN eav_attribute_group ON eav_attribute_set.attribute_set_id = eav_attribute_group.attribute_set_id
+                WHERE
+                    eav_attribute_group.attribute_group_name = '$group'
+            )
+            AND eav_attribute_set.attribute_set_name <> 'Default'
+        GROUP BY
+            eav_attribute_set.attribute_set_id
+    " | while read attribute_set_id attribute_set_name
+    do
+        echo "Adding group '$group' to attribute set '$attribute_set_name'";
+
+        mysql $mysqlBeast "$databaseName" -e "
+            INSERT INTO eav_attribute_group (
+                attribute_set_id, attribute_group_name, sort_order, default_id
+            ) VALUES (
+                $attribute_set_id, '$group', 100, 0
+            )
+        "
+    done
+done
 
 echo "
 
 Done
 
 "
-
-
 
 # Posthook allows bin/dataMigration/preHooks/_04_fixKnownIssues.bash to be run before this
 postHookFile
