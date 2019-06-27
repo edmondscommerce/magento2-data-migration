@@ -78,6 +78,9 @@ class xmlUpdater
     public function getDomByStep($step)
     {
         switch ($step) {
+            case 'EAV Step Classes':
+                $mapFile = 'class-map.xml';
+                break;
             case 'EAV Step Groups':
                 $mapFile = 'eav-attribute-groups.xml';
                 break;
@@ -312,7 +315,7 @@ function processEavEntityType(string $step, string $log): void
 
     $document = 'eav_entity_type';
     $pattern  = '%\[ERROR\]: Incompatibility in data. Source document: ' . $document . '\. Field: (?<fields>[a-zA-Z0-9_,]+)\. Error: (?<error>[^]+)%si';
-    $fields   = extractFields($pattern, $log);
+    $fields   = extractMatches($pattern, $log);
 
     if (empty($fields['fields'])) {
         echo "none found\n";
@@ -327,6 +330,9 @@ function processEavEntityType(string $step, string $log): void
 
     foreach ($fields['fields'] as $index => $field) {
         $error = $fields['error'][$index];
+        $class = extractMatches('%Class (?<class>[^ ]+) is not mapped .*%', $error)['class'][0];
+
+        ignoreClass($class);
 
         $subtasks[] = [
             "$jiraIssueTitlePrefix, EAV Entity Type Issues $index",
@@ -353,7 +359,7 @@ function processEavAttribute(string $step, string $log): void
 
     $document = 'eav_attribute';
     $pattern  = '%\[ERROR\]: Incompatibility in data. Source document: ' . $document . '\. Field: (?<fields>[a-zA-Z0-9_,]+)\. Error: (?<error>[^]+)attribute_id=(?<attribute_id>[^]+)%si';
-    $fields   = extractFields($pattern, $log);
+    $fields   = extractMatches($pattern, $log);
 
     if (empty($fields['fields'])) {
         echo "none found\n";
@@ -392,11 +398,11 @@ function isEavStep(string $step): bool
     return 'EAV Step' === $step;
 }
 
-function extractFields(string $pattern, string $log): array
+function extractMatches(string $pattern, string $subject): array
 {
-    preg_match_all($pattern, $log, $fields);
+    preg_match_all($pattern, $subject, $matches);
 
-    return $fields;
+    return $matches;
 }
 
 function queueJiraIssue(string $title, string $description, array $subtasks = []): void
@@ -435,7 +441,6 @@ QUERY;
     $attrCode = $attr['attribute_code'];
 
     $config = xmlUpdater::instance()->getDomByStep('EAV Step Groups');
-    $xPath = new DOMXPath($config);
 
     // Check that ignore exists
 
@@ -461,4 +466,22 @@ QUERY;
 
     $rule->appendChild($attribute);
     $ignore->appendChild($rule);
+}
+
+function ignoreClass(string $class): void
+{
+    /*
+     * https://github.com/magento/data-migration-tool/issues/444
+     */
+
+    $config   = xmlUpdater::instance()->getDomByStep('EAV Step Classes');
+    $classmap = $config->getElementsByTagName('classmap')->item(0);
+
+    $rename = $config->createElement('rename');
+    $from   = $config->createElement('from', $class);
+    $to     = $config->createElement('to', '');
+
+    $rename->appendChild($from);
+    $rename->appendChild($to);
+    $classmap->appendChild($rename);
 }
