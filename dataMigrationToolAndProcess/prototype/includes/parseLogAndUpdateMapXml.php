@@ -39,7 +39,8 @@ foreach ($steps['step'] as $k => $step) {
         processFields($step, $log);
         processDestinationDocuments($step, $log);
         processDestinationFields($step, $log);
-        processEav($step, $log);
+        processEavAttribute($step, $log);
+        processEavEntityType($step, $log);
     }
 }
 
@@ -77,17 +78,19 @@ class xmlUpdater
     public function getDomByStep($step)
     {
         switch ($step) {
+            case 'EAV Step Groups':
+                $mapFile = 'eav-attribute-groups.xml';
+                break;
             case 'EAV Step':
                 $mapFile = 'map-eav.xml';
                 break;
-
             case 'Customer Attributes Step':
                 $mapFile = 'map-customer.xml';
                 break;
-
             default:
                 $mapFile = 'map.xml';
         }
+
         return $this->getDom($mapFile);
     }
 
@@ -299,16 +302,17 @@ function processDestinationFields($step, $log)
     }
 }
 
-function processEav(string $step, string $log): void
+function processEavEntityType(string $step, string $log): void
 {
     if (! isEavStep($step)) {
         return;
     }
 
-    echo "Finding EAV issues $step...\n";
+    echo "Finding EAV Entity Type Issues $step...\n";
 
-    $pattern = '%\[ERROR\]: Incompatibility in data. Source document: (?<document>[^.]+?)\. Field: (?<fields>[a-zA-Z0-9_,]+)\. Error: (?<error>[^]+)%si';
-    $fields  = extractFields($pattern, $log);
+    $document = 'eav_entity_type';
+    $pattern  = '%\[ERROR\]: Incompatibility in data. Source document: ' . $document . '\. Field: (?<fields>[a-zA-Z0-9_,]+)\. Error: (?<error>[^]+)%si';
+    $fields   = extractFields($pattern, $log);
 
     if (empty($fields['fields'])) {
         echo "none found\n";
@@ -322,11 +326,10 @@ function processEav(string $step, string $log): void
     $jiraIssueTitlePrefix = "Magento 2 Data Migration, Step: $step";
 
     foreach ($fields['fields'] as $index => $field) {
-        $document = $fields['document'][$index];
-        $error    = $fields['error'][$index];
+        $error = $fields['error'][$index];
 
         $subtasks[] = [
-            "$jiraIssueTitlePrefix, EAV issues $index",
+            "$jiraIssueTitlePrefix, EAV Entity Type Issues $index",
             "$jiraIssueTitlePrefix, Document: $document, Field: $field, Error: $error"
         ];
 
@@ -334,7 +337,51 @@ function processEav(string $step, string $log): void
     }
 
     queueJiraIssue(
-        "$jiraIssueTitlePrefix, EAV Issues",
+        "$jiraIssueTitlePrefix, EAV Entity Type Issues",
+        'EAV entity types that cannot currently be migrated',
+        $subtasks
+    );
+}
+
+function processEavAttribute(string $step, string $log): void
+{
+    if (! isEavStep($step)) {
+        return;
+    }
+
+    echo "Finding EAV Attribute Issues $step...\n";
+
+    $document = 'eav_attribute';
+    $pattern  = '%\[ERROR\]: Incompatibility in data. Source document: ' . $document . '\. Field: (?<fields>[a-zA-Z0-9_,]+)\. Error: (?<error>[^]+)attribute_id=(?<attribute_id>[^]+)%si';
+    $fields   = extractFields($pattern, $log);
+
+    if (empty($fields['fields'])) {
+        echo "none found\n";
+        return;
+    }
+
+    echo count($fields['fields']) . " issues found\n";
+    echo "Processing issues ...\n";
+
+    $subtasks = [];
+    $jiraIssueTitlePrefix = "Magento 2 Data Migration, Step: $step";
+
+    foreach ($fields['fields'] as $index => $field) {
+        $id    = $fields['attribute_id'][$index];
+        $error = $fields['error'][$index] . "attribute_id=$id";
+
+        ignoreAttribute((int)$id);
+
+        $subtasks[] = [
+            "$jiraIssueTitlePrefix, EAV Attribute Issues $index",
+            "$jiraIssueTitlePrefix, Document: $document, Field: $field, Error: $error, attribute_id: $id"
+        ];
+
+        echo "$document - $field - $error\n";
+    }
+
+    queueJiraIssue(
+        "$jiraIssueTitlePrefix, EAV Attribute Issues",
         'EAV attributes that cannot currently be migrated',
         $subtasks
     );
@@ -361,4 +408,57 @@ function queueJiraIssue(string $title, string $description, array $subtasks = []
     }
 
     $jiraShell->queueIssue($title, $description, $subtasks);
+}
+
+function ignoreAttribute(int $id): void
+{
+    global $migrationSelect;
+
+    $query = <<<QUERY
+SELECT
+    entity_type_code, attribute_code
+FROM
+    `eav_attribute`
+     JOIN `eav_entity_type` ON `eav_attribute`.`entity_type_id` = `eav_entity_type`.`entity_type_id`
+WHERE
+    attribute_id = ?
+QUERY;
+
+    $result = $migrationSelect->execute($query, [$id]);
+
+    if (0 === \count($result)) {
+        throw new \RuntimeException("No attribute found with id: $id");
+    }
+
+    $attr     = array_pop($result);
+    $typeCode = $attr['entity_type_code'];
+    $attrCode = $attr['attribute_code'];
+
+    $config = xmlUpdater::instance()->getDomByStep('EAV Step Groups');
+    $xPath = new DOMXPath($config);
+
+    // Check that ignore exists
+
+    $hasIgnore = 'ignore' === $config->getElementsByTagName('group')->item(0)->getAttribute('name');
+
+    if (! $hasIgnore) {
+        $group     = $config->createElement('group');
+        $attribute = $config->createAttribute('name');
+
+        $attribute->value = 'ignore';
+
+        $group->appendChild($attribute);
+        $config->insertBefore($group, $config->firstChild);
+    }
+
+    // Add new ignore rule
+
+    $ignore    = $config->getElementsByTagName('group')->item(0);
+    $rule      = $config->createElement('attribute', $attrCode);
+    $attribute = $config->createAttribute('type');
+
+    $attribute->value = $typeCode;
+
+    $rule->appendChild($attribute);
+    $ignore->appendChild($rule);
 }

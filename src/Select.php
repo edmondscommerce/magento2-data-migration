@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Edmondscommerce\MagentoMigration;
+namespace EdmondsCommerce\MagentoMigration;
 
 class Select
 {
@@ -30,8 +30,8 @@ class Select
         try {
             $this->extractDbConfig($configPath);
 
-            $this->pdo = new PDO("mysql:dbname={$this->dbName};host={$this->host}", $this->user, $this->pass);
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->pdo = new \PDO("mysql:dbname={$this->dbName};host={$this->host}", $this->user, $this->pass);
+            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
             echo "Unable to setup connection to database\n";
             echo $e->getMessage() . "\n";
@@ -43,10 +43,10 @@ class Select
     {
         $this->assertIsValidQuery($query);
 
-        return $this->pdo
-            ->query($query)
-            ->execute($params)
-            ->fetchAll();
+        $statement = $this->pdo->prepare($query);
+        $statement->execute($params);
+
+        return $statement->fetchAll();
     }
 
     private function extractDbConfig(string $configPath): void
@@ -67,10 +67,10 @@ class Select
 
         /** @var SimpleXMLElement $xml */
 
-        $this->host   = $xml->source['host'];
-        $this->dbName = $xml->source['name'];
-        $this->user   = $xml->source['user'];
-        $this->pass   = $xml->source['password'];
+        $this->host   = (string)$xml->source->database['host'];
+        $this->dbName = (string)$xml->source->database['name'];
+        $this->user   = (string)$xml->source->database['user'];
+        $this->pass   = (string)$xml->source->database['password'];
     }
 
     private function assertIsValidQuery(string $query): void

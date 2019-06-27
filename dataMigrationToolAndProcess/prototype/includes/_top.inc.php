@@ -48,6 +48,6 @@ $jiraShell = new \EdmondsCommerce\JiraShell\JiraShell(
     '/home/ec/jiraShell/env'
 );
 
-$select = new \Edmondscommerce\MagentoMigration\Select(
-    __DIR__ . '/../../../../../../bin/dataMigration/config.xml'
+$migrationSelect = new \EdmondsCommerce\MagentoMigration\Select(
+    $GLOBALS['vhostRoot'] . '/bin/dataMigration/config.xml'
 );
