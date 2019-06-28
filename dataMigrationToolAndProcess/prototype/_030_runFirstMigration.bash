@@ -26,6 +26,7 @@ magento -vvv --no-ansi migrate:data -r ${dataMigrationDir}/config.xml |& tee ${v
 set -e
 
 php -f ${DIR}/includes/parseLogAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
+php -f ${DIR}/includes/parseLogAndUpdateClassMapXml.php -- --vhostRoot=${vhostRoot}
 
 echo "
 ----------------

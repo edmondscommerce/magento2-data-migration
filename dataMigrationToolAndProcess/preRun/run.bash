@@ -94,10 +94,11 @@ else
     bash -${-//s} ./_02_downloadDatabase.bash "$sshUser" "$sshHost" "$sshPort" "$remoteVhostPublicPath" "$localLiveFilesStorage" "$tableListPath" "$dumpName";
 fi
 bash -${-//s} ./_03_importDatabase.bash "$databaseName" "$localLiveFilesStorage/$dumpName" "$useBeast";
-bash -${-//s} ./_04_fixKnownIssues.bash "$databaseName" "$useBeast"
+bash -${-//s} ./_04_slimDownDatabase.bash "$databaseName" "$useBeast"
+bash -${-//s} ./_05_fixKnownIssues.bash "$databaseName" "$useBeast"
 
 remoteMediaPath="${remoteVhostPublicPath}media";
 localMediaPath="${vhostRoot}/pub/media";
-bash -${-//s} ./_05_downloadMedia.bash "$sshUser" "$sshHost" "$remoteMediaPath" "$localMediaPath" "$databaseName" "$sshPort" "$useBeast";
+bash -${-//s} ./_06_downloadMedia.bash "$sshUser" "$sshHost" "$remoteMediaPath" "$localMediaPath" "$databaseName" "$sshPort" "$useBeast";
 
 echo "PreRun process completed"
