@@ -15,14 +15,22 @@ mkdir -p var/dataMigration
 echo "
 Running bin/magento's migrate:settings command"
 echo "The output below will be logged to ${vhostRoot}/var/dataMigration/settingsMigration.log"
-magento -vvv --no-ansi migrate:settings ${dataMigrationDir}/config.xml  |& tee ${vhostRoot}/var/dataMigration/settingsMigration.log
+
+runCmd="magento -vvv --no-ansi migrate:settings ${dataMigrationDir}/config.xml  |& tee ${vhostRoot}/var/dataMigration/settingsMigration.log"
+
+echo $runCmd;
+eval $runCmd;
 
 echo "
 
 Running bin/magento's migrate:data command"
 echo "The output below will be logged to ${vhostRoot}/var/dataMigration/dataMigration.log"
+
+runCmd="magento -vvv --no-ansi migrate:data -r ${dataMigrationDir}/config.xml |& tee ${vhostRoot}/var/dataMigration/dataMigration.log"
+echo $runCmd
+
 set +e
-magento -vvv --no-ansi migrate:data -r ${dataMigrationDir}/config.xml |& tee ${vhostRoot}/var/dataMigration/dataMigration.log
+eval $runCmd
 set -e
 
 php -f ${DIR}/includes/parseLogAndUpdateMapXml.php -- --vhostRoot=${vhostRoot}
