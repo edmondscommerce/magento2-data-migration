@@ -9,5 +9,19 @@
       "email": "info@edmondscommerce.co.uk"
     }
   ],
+  "require": {
+    "edmondscommerce/jirashell": "dev-master"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/edmondscommerce/jirashell"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "EdmondsCommerce\\MagentoMigration\\": ["src/"]
+    }
+  },
   "minimum-stability": "dev"
 }

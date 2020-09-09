@@ -122,7 +122,7 @@ then
     if [ ! -d ${xmlConfigFoldersPath}/${magento1Version} ]
     then
         echo "Invalid magento1Version ${magento1Version}"
-        echo "Faileding finding directory: ${xmlConfigFoldersPath}/${magento1Version}"
+        echo "Failed finding directory: ${xmlConfigFoldersPath}/${magento1Version}"
         exit 1
     fi
 else
@@ -162,6 +162,7 @@ fi
 
 mkdir -p ${dataMigrationDir}
 cd ${dataMigrationDir}
+
 echo -n "Copying the distributed config.xml... "
 cp ${xmlConfigFoldersPath}/${magento1Version}/config.xml.dist ./config.xml
 echo "done"
@@ -171,15 +172,19 @@ mysqlRootPass=$(cat ~/.my.cnf | grep password | cut -d = -f 2)
 echo "done"
 
 echo -n "Updating the config.xml file with the Magento 1 database details... "
-magento1DbXmlFind='<database host="localhost" name="magento1" user="root"/>'
+magento1DbXmlFind='<database host="localhost" name="magento1" user="root" />'
 magento1DbXmlReplace="<database host=\"${mysqlHost}\" name=\"${magento1DbName}\" user=\"${dbUsername}\" password=\"${mysqlRootPass}\"/>"
+# TODO: Not working
+
 sed -i  "s#${magento1DbXmlFind}#${magento1DbXmlReplace}#" ./config.xml
 echo "done"
 
 echo -n "Updating the config.xml file with the Magento 2 database details... "
-magento2DbXmlFind='<database host="localhost" name="magento2" user="root"/>'
+magento2DbXmlFind='<database host="localhost" name="magento2" user="root" />'
 magento2DbXmlReplace="<database host=\"${mysqlHost}\" name=\"${magento2DbName}\" user=\"${dbUsername}\" password=\"${mysqlRootPass}\"/>"
+echo $mysqlRootPass;
 
+# TODO: Not working
 sed -i  "s#${magento2DbXmlFind}#${magento2DbXmlReplace}#" ./config.xml
 echo "done"
 
